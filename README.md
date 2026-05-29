@@ -14,14 +14,12 @@ db.students.insertMany([
   { rno: 5, name: "Sneha", city: "Bangalore", marks: 88, age: 21, dept: "CSE" }
 ])
 
-// Where Clause
 db.students.find({city: "Chennai"})
 db.students.find({marks: {$gt: 80}})
-
-// AND Operation
+ 
 db.students.find({$and: [{city: "Bangalore"}, {marks: {$gt: 75}}]})
 
-// OR Operation
+ 
 db.students.find({$or: [{dept: "CSE"}, {marks: {$gte: 90}}]})
 ```
 
@@ -38,19 +36,19 @@ db.students.insertMany([
   { rno: 3, name: "Priya", city: "Chennai", marks: 92, age: 20 }
 ])
 
-// Insert One
+ 
 db.students.insertOne({ rno: 4, name: "Kiran", city: "Hyderabad", marks: 76, age: 22 })
 
-// Query
+ 
 db.students.find()
 
-// Update
+ 
 db.students.updateOne({ rno: 1 }, { $set: { marks: 95 } })
 
-// Delete
+ 
 db.students.deleteOne({ rno: 2 })
 
-// Projection
+ 
 db.students.find({}, { name: 1, marks: 1, city: 1, _id: 0 })
 ```
 
@@ -68,10 +66,10 @@ db.students.insertMany([
   { rno: 4, name: "Rahul", city: "Mysore", marks: 65, age: 22, dept: "MECH" }
 ])
 
-// Select only specific fields
+ 
 db.students.find({}, { name: 1, city: 1, marks: 1, _id: 0 })
 
-// Ignore some fields
+ 
 db.students.find({}, { age: 0, dept: 0, _id: 0 })
 ```
 
@@ -92,10 +90,10 @@ db.students.insertMany([
   { rno: 7, name: "Meera", city: "Chennai", marks: 89 }
 ])
 
-// First 5 documents
+ 
 db.students.find().limit(5)
 
-// First 5 documents sorted by marks descending
+ 
 db.students.find().sort({marks: -1}).limit(5)
 ```
 
@@ -115,13 +113,13 @@ db.students.insertMany([
   { rno: 6, name: "Kiran", marks: 72, age: 23, dept: "ECE" }
 ])
 
-// Comparison Selectors
+ 
 db.students.find({marks: {$gt: 80}})
 db.students.find({marks: {$gte: 85}})
 db.students.find({marks: {$lt: 75}})
 db.students.find({age: {$ne: 20}})
 
-// Logical Selectors
+ 
 db.students.find({$and: [{dept: "CSE"}, {marks: {$gt: 80}}]})
 db.students.find({$or: [{dept: "ECE"}, {marks: {$lt: 75}}]})
 db.students.find({$nor: [{dept: "CSE"}, {age: {$lt: 21}}]})
@@ -149,16 +147,16 @@ db.students.insertMany([
   }
 ])
 
-// $ projection (first matching element)
+ 
 db.students.find({subjects: "Math"}, { "subjects.$": 1, name: 1 })
 
-// $elemMatch
+ 
 db.students.find(
   { scores: { $elemMatch: { $gt: 85 } } },
   { name: 1, scores: 1 }
 )
 
-// $slice
+ 
 db.students.find({}, { name: 1, subjects: { $slice: 2 }, _id: 0 })
 db.students.find({}, { name: 1, subjects: { $slice: -2 }, _id: 0 })
 ```
@@ -179,12 +177,11 @@ db.students.insertMany([
   { name: "Kiran", marks: 72, age: 23, dept: "ECE" }
 ])
 
-// Basic Aggregations
+ 
 db.students.aggregate([{ $group: { _id: null, AverageMarks: { $avg: "$marks" }}}])
 db.students.aggregate([{ $group: { _id: null, MaxMarks: { $max: "$marks" }}}])
 db.students.aggregate([{ $group: { _id: null, MinMarks: { $min: "$marks" }}}])
-
-// Group by Department
+ 
 db.students.aggregate([
   { $group: { 
       _id: "$dept", 
@@ -194,7 +191,7 @@ db.students.aggregate([
   }}
 ])
 
-// $push and $addToSet
+ 
 db.students.aggregate([
   { $group: { 
       _id: "$dept", 
@@ -206,6 +203,4 @@ db.students.aggregate([
 
 ---
 
-All programs are now properly separated and match your questions exactly.  
-
-Let me know if you want any modifications!
+ 
