@@ -1,206 +1,265 @@
- 
+**Here is the complete step-by-step solution for all 10 questions in one response.**
+
+I will:
+1. Create a database `mydb` (or use appropriate DB per question).
+2. Create collections with sample data where needed.
+3. Provide full MongoDB shell commands (`mongosh` / `mongo`) for each part.
+4. Execute one by one from start.
+
 ---
 
-### **Program 1a: Illustration of Where Clause, AND, OR operations**
+### **1. Where Clause, AND, OR + CRUD Operations**
 
 ```javascript
-use StudentDB
+use mydb
 
-db.students.insertMany([
-  { rno: 1, name: "Bhavana", city: "Chennai", marks: 85, age: 20, dept: "CSE" },
-  { rno: 2, name: "Ajay", city: "Bangalore", marks: 78, age: 21, dept: "ECE" },
-  { rno: 3, name: "Priya", city: "Chennai", marks: 92, age: 20, dept: "CSE" },
-  { rno: 4, name: "Rahul", city: "Mysore", marks: 65, age: 22, dept: "MECH" },
-  { rno: 5, name: "Sneha", city: "Bangalore", marks: 88, age: 21, dept: "CSE" }
+// Create collection and insert sample data
+db.createCollection("employees")
+
+db.employees.insertMany([
+  { _id: 1, name: "Alice", age: 30, dept: "IT", salary: 70000, active: true },
+  { _id: 2, name: "Bob", age: 25, dept: "HR", salary: 50000, active: true },
+  { _id: 3, name: "Charlie", age: 35, dept: "IT", salary: 80000, active: false },
+  { _id: 4, name: "Diana", age: 28, dept: "Finance", salary: 65000, active: true }
 ])
 
-db.students.find({city: "Chennai"})
-db.students.find({marks: {$gt: 80}})
- 
-db.students.find({$and: [{city: "Bangalore"}, {marks: {$gt: 75}}]})
+// a. WHERE, AND, OR
+db.employees.find({ dept: "IT" })                          // Where clause
+db.employees.find({ dept: "IT", age: { $gt: 28 } })       // AND
+db.employees.find({ $or: [{ dept: "IT" }, { dept: "HR" }] }) // OR
 
- 
-db.students.find({$or: [{dept: "CSE"}, {marks: {$gte: 90}}]})
+// b. CRUD
+db.employees.insertOne({ _id: 5, name: "Eve", age: 32, dept: "IT", salary: 75000 })
+
+db.employees.find({ name: "Alice" })                       // Query
+db.employees.updateOne({ name: "Bob" }, { $set: { salary: 55000 } })
+db.employees.deleteOne({ name: "Charlie" })
+
+// Projection
+db.employees.find({}, { name: 1, dept: 1, _id: 0 })
 ```
 
 ---
 
-### **Program 1b: Insert, Query, Update, Delete and Projection**
+### **2. Projection + Limit**
 
 ```javascript
-use StudentDB
+// Continue in mydb
+// a. Select specific fields (Projection)
+db.employees.find({}, { name: 1, age: 1, dept: 1, _id: 0 })
 
-db.students.insertMany([
-  { rno: 1, name: "Bhavana", city: "Chennai", marks: 85, age: 20 },
-  { rno: 2, name: "Ajay", city: "Bangalore", marks: 78, age: 21 },
-  { rno: 3, name: "Priya", city: "Chennai", marks: 92, age: 20 }
-])
-
- 
-db.students.insertOne({ rno: 4, name: "Kiran", city: "Hyderabad", marks: 76, age: 22 })
-
- 
-db.students.find()
-
- 
-db.students.updateOne({ rno: 1 }, { $set: { marks: 95 } })
-
- 
-db.students.deleteOne({ rno: 2 })
-
- 
-db.students.find({}, { name: 1, marks: 1, city: 1, _id: 0 })
+// b. First 5 documents with limit
+db.employees.find({}, { name: 1, age: 1, dept: 1, _id: 0 }).limit(5)
 ```
 
 ---
 
-### **Program 2a: Select certain fields and ignore some fields**
+### **3. Query Selectors**
 
 ```javascript
-use StudentDB
+// Comparison + Logical
+db.employees.find({ age: { $gte: 30 } })
+db.employees.find({ salary: { $gt: 60000, $lt: 80000 } })
+db.employees.find({ $and: [{ dept: "IT" }, { active: true }] })
+db.employees.find({ $nor: [{ age: { $lt: 25 } }, { salary: { $gt: 90000 } }] })
 
-db.students.insertMany([
-  { rno: 1, name: "Bhavana", city: "Chennai", marks: 85, age: 20, dept: "CSE" },
-  { rno: 2, name: "Ajay", city: "Bangalore", marks: 78, age: 21, dept: "ECE" },
-  { rno: 3, name: "Priya", city: "Chennai", marks: 92, age: 20, dept: "CSE" },
-  { rno: 4, name: "Rahul", city: "Mysore", marks: 65, age: 22, dept: "MECH" }
+// Geospatial (create sample geo data)
+db.places.insertMany([
+  { name: "Park", location: { type: "Point", coordinates: [ -73.97, 40.77 ] } },
+  { name: "Museum", location: { type: "Point", coordinates: [ -73.99, 40.75 ] } }
 ])
 
- 
-db.students.find({}, { name: 1, city: 1, marks: 1, _id: 0 })
+db.places.createIndex({ location: "2dsphere" })
+db.places.find({
+  location: {
+    $near: {
+      $geometry: { type: "Point", coordinates: [ -73.98, 40.76 ] },
+      $maxDistance: 1000
+    }
+  }
+})
 
- 
-db.students.find({}, { age: 0, dept: 0, _id: 0 })
+// Bitwise (example)
+db.employees.find({ _id: { $bitsAllSet: 1 } })  // Adjust based on your data
 ```
 
 ---
 
-### **Program 2b: Display the first 5 documents using limit**
+### **4. Projection Operators ($ , $elemMatch, $slice)**
 
 ```javascript
-use StudentDB
+db.createCollection("students")
 
 db.students.insertMany([
-  { rno: 1, name: "Bhavana", city: "Chennai", marks: 85 },
-  { rno: 2, name: "Ajay", city: "Bangalore", marks: 78 },
-  { rno: 3, name: "Priya", city: "Chennai", marks: 92 },
-  { rno: 4, name: "Rahul", city: "Mysore", marks: 65 },
-  { rno: 5, name: "Sneha", city: "Bangalore", marks: 88 },
-  { rno: 6, name: "Kiran", city: "Hyderabad", marks: 76 },
-  { rno: 7, name: "Meera", city: "Chennai", marks: 89 }
+  { name: "John", scores: [85, 90, 78], courses: ["Math", "Physics", "Chem"] },
+  { name: "Emma", scores: [92, 88, 95], courses: ["Bio", "Math"] }
 ])
 
- 
-db.students.find().limit(5)
+// $ projection (first matching element)
+db.students.find({ scores: 90 }, { "scores.$": 1, name: 1 })
 
- 
-db.students.find().sort({marks: -1}).limit(5)
+// $elemMatch
+db.students.find(
+  { scores: { $elemMatch: { $gte: 90 } } },
+  { name: 1, scores: { $elemMatch: { $gte: 90 } } }
+)
+
+// $slice
+db.students.find({}, { name: 1, scores: { $slice: 2 }, courses: { $slice: -2 } })
 ```
 
 ---
 
-### **Program 3: Query selectors (comparison & logical)**
+### **5. Aggregation Operators**
 
 ```javascript
-use StudentDB
+db.createCollection("sales")
 
-db.students.insertMany([
-  { rno: 1, name: "Bhavana", marks: 85, age: 20, dept: "CSE" },
-  { rno: 2, name: "Ajay", marks: 78, age: 21, dept: "ECE" },
-  { rno: 3, name: "Priya", marks: 92, age: 20, dept: "CSE" },
-  { rno: 4, name: "Rahul", marks: 65, age: 22, dept: "MECH" },
-  { rno: 5, name: "Sneha", marks: 88, age: 21, dept: "CSE" },
-  { rno: 6, name: "Kiran", marks: 72, age: 23, dept: "ECE" }
+db.sales.insertMany([
+  { item: "Laptop", price: 1200, quantity: 2, category: "Electronics" },
+  { item: "Phone", price: 800, quantity: 5, category: "Electronics" },
+  { item: "Book", price: 20, quantity: 10, category: "Books" }
 ])
 
- 
-db.students.find({marks: {$gt: 80}})
-db.students.find({marks: {$gte: 85}})
-db.students.find({marks: {$lt: 75}})
-db.students.find({age: {$ne: 20}})
-
- 
-db.students.find({$and: [{dept: "CSE"}, {marks: {$gt: 80}}]})
-db.students.find({$or: [{dept: "ECE"}, {marks: {$lt: 75}}]})
-db.students.find({$nor: [{dept: "CSE"}, {age: {$lt: 21}}]})
+db.sales.aggregate([
+  { $group: {
+      _id: "$category",
+      totalRevenue: { $sum: { $multiply: ["$price", "$quantity"] } },
+      avgPrice: { $avg: "$price" },
+      minPrice: { $min: "$price" },
+      maxPrice: { $max: "$price" },
+      items: { $push: "$item" },
+      uniqueItems: { $addToSet: "$item" }
+    }
+  }
+])
 ```
 
 ---
 
-### **Program 4: Projection operators ($ , $elemMatch, $slice)**
+### **6. Aggregation Pipeline ($match, $group, $sort, $project, $skip, etc.)**
 
 ```javascript
-use StudentDB
+db.sales.aggregate([
+  { $match: { category: "Electronics" } },           // Filter
+  { $group: {
+      _id: "$item",
+      totalSales: { $sum: { $multiply: ["$price","$quantity"] } },
+      count: { $sum: 1 }
+    }
+  },
+  { $sort: { totalSales: -1 } },                     // Sort descending
+  { $project: { item: "$_id", revenue: "$totalSales", _id: 0 } },
+  { $skip: 0 },                                      // Skip (pagination)
+  { $limit: 10 }
+])
+```
 
-db.students.insertMany([
+---
+
+### **7. Listings & Reviews + E-commerce**
+
+```javascript
+// 7a - ListingsAndReviews (sample)
+db.createCollection("listingsAndReviews")
+
+db.listingsAndReviews.insertMany([
   {
-    rno: 101,
-    name: "Arjun",
-    subjects: ["Math", "Physics", "Chemistry", "Biology"],
-    scores: [85, 78, 92, 88]
+    listing_url: "http://example.com/1",
+    name: "Cozy Apartment",
+    address: { street: "123 Main St" },
+    host: { host_picture_url: "https://example.com/host1.jpg" }
   },
   {
-    rno: 102,
-    name: "Divya",
-    subjects: ["English", "Math", "History"],
-    scores: [90, 82, 76]
+    listing_url: "http://example.com/2",
+    name: "Luxury Villa",
+    address: { street: "456 Ocean Ave" },
+    host: { host_picture_url: null }
   }
 ])
 
- 
-db.students.find({subjects: "Math"}, { "subjects.$": 1, name: 1 })
-
- 
-db.students.find(
-  { scores: { $elemMatch: { $gt: 85 } } },
-  { name: 1, scores: 1 }
+db.listingsAndReviews.find(
+  { "host.host_picture_url": { $exists: true, $ne: null } },
+  { listing_url: 1, name: 1, address: 1, "host.host_picture_url": 1 }
 )
 
- 
-db.students.find({}, { name: 1, subjects: { $slice: 2 }, _id: 0 })
-db.students.find({}, { name: 1, subjects: { $slice: -2 }, _id: 0 })
+// 7b - E-commerce reviews summary
+db.createCollection("reviews")
+
+db.reviews.insertMany([
+  { product: "Laptop", rating: 5, review: "Excellent" },
+  { product: "Laptop", rating: 4, review: "Good" },
+  { product: "Phone", rating: 3, review: "Average" }
+])
+
+db.reviews.aggregate([
+  { $group: {
+      _id: "$product",
+      avgRating: { $avg: "$rating" },
+      reviewCount: { $sum: 1 },
+      reviews: { $push: "$review" }
+    }
+  }
+])
 ```
 
 ---
 
-### **Program 5: Aggregation operations**
+### **8. Indexes**
 
 ```javascript
-use StudentDB
+// a. Different indexes
+db.employees.createIndex({ email: 1 }, { unique: true })
+db.employees.createIndex({ age: 1 }, { sparse: true })
+db.employees.createIndex({ dept: 1, salary: -1 })           // Compound
+db.employees.createIndex({ tags: 1 })                        // Multikey (if tags array)
 
-db.students.insertMany([
-  { name: "Bhavana", marks: 85, age: 20, dept: "CSE" },
-  { name: "Ajay", marks: 78, age: 21, dept: "ECE" },
-  { name: "Priya", marks: 92, age: 20, dept: "CSE" },
-  { name: "Rahul", marks: 65, age: 22, dept: "MECH" },
-  { name: "Sneha", marks: 88, age: 21, dept: "CSE" },
-  { name: "Kiran", marks: 72, age: 23, dept: "ECE" }
+// b. Query optimization demo
+db.employees.find({ dept: "IT", salary: { $gt: 60000 } }).explain("executionStats")
+```
+
+---
+
+### **9. Text Search**
+
+```javascript
+db.createCollection("catalog")
+
+db.catalog.insertMany([
+  { name: "Wireless Headphones", description: "Noise cancelling bluetooth headphones" },
+  { name: "Smart Watch", description: "Fitness tracking smartwatch with heart rate" },
+  { name: "Bluetooth Speaker", description: "Portable waterproof speaker" }
 ])
 
- 
-db.students.aggregate([{ $group: { _id: null, AverageMarks: { $avg: "$marks" }}}])
-db.students.aggregate([{ $group: { _id: null, MaxMarks: { $max: "$marks" }}}])
-db.students.aggregate([{ $group: { _id: null, MinMarks: { $min: "$marks" }}}])
- 
-db.students.aggregate([
-  { $group: { 
-      _id: "$dept", 
-      TotalStudents: { $sum: 1 },
-      AvgMarks: { $avg: "$marks" },
-      HighestMarks: { $max: "$marks" }
-  }}
-])
+db.catalog.createIndex({ name: "text", description: "text" })
 
- 
-db.students.aggregate([
-  { $group: { 
-      _id: "$dept", 
-      Students: { $push: "$name" },
-      UniqueMarks: { $addToSet: "$marks" }
-  }}
+// a. Text search
+db.catalog.find({ $text: { $search: "bluetooth" } })
+
+// b. Exclude words/phrases
+db.catalog.find({ $text: { $search: "headphones -noise" } })
+db.catalog.find({ $text: { $search: "\"smart watch\"" } })
+```
+
+---
+
+### **10. Text Search Aggregation Pipeline**
+
+```javascript
+db.catalog.aggregate([
+  { $match: { $text: { $search: "bluetooth" } } },
+  { $project: { name: 1, description: 1, score: { $meta: "textScore" } } },
+  { $sort: { score: { $meta: "textScore" } } },
+  { $limit: 5 }
 ])
 ```
 
 ---
 
- 
+**How to run all at once:**
+
+1. Start MongoDB server.
+2. Open `mongosh`
+3. Copy-paste each block one by one.
+
+All code is self-contained with sample data creation. Let me know if you want Python (PyMongo) versions or export to `.js` file!
